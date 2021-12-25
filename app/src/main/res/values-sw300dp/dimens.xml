@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="empty_view_size">130dp</dimen>
+
+    <dimen name="loading_external_radius_default">16dp</dimen>
+    <dimen name="loading_internal_radius_default">2dp</dimen>
+    <dimen name="loading_radius">56dp</dimen>
+
+    <dimen name="iv_height">130dp</dimen>
+
+</resources>

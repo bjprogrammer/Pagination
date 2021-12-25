@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tool="http://schemas.android.com/tools">
+
+    <data>
+        <variable name="image"  type="com.image.pagination.home.model.Image.Page.Items.Content"/>
+        <variable name="viewModel"  type="com.image.pagination.home.viewmodel.HomeViewModel"/>
+    </data>
+
+<androidx.cardview.widget.CardView
+    android:id="@+id/cardRow"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/rv_margin_top"
+    android:layout_marginEnd="@dimen/card_layout_margin"
+    android:stateListAnimator="@animator/selector_animator"
+    android:foreground="?attr/selectableItemBackgroundBorderless"
+    app:cardBackgroundColor="@android:color/transparent"
+    app:cardElevation="@dimen/card_layout_elevation">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <RelativeLayout
+            android:id="@+id/image_container"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/iv_height"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/imageView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="fitXY"
+                app:drawable="@{image.drawable}"
+                app:spinner="@{cardSpinner}"
+                android:contentDescription="@string/image_thumbnail" />
+
+            <com.wang.avi.AVLoadingIndicatorView
+                android:id="@+id/cardSpinner"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                style="@style/AVLoadingIndicatorView"
+                android:visibility="gone"
+                app:indicatorName="BallScaleMultipleIndicator"
+                app:indicatorColor="@android:color/white"
+                android:layout_gravity="center"
+                android:layout_centerInParent="true"/>
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/tv_margin_top"
+            android:paddingBottom="@dimen/tv_margin_bottom"
+            android:textAlignment="textStart"
+            android:textColor="@color/colorAccent"
+            android:fontFamily="@font/light_font"
+            android:textSize="@dimen/text_size_small"
+            app:spannableText="@{image.name}"
+            app:searchText="@{viewModel.search}"
+            android:singleLine="true"
+            android:maxLength="23"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/image_container"
+            tool:text="Movie Name"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</androidx.cardview.widget.CardView>
+</layout>
