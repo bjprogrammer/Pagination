@@ -1,0 +1,16 @@
+<component name="libraryTable">
+  <library name="Gradle: com.github.samigehi:loadingView:1.1@aar">
+    <CLASSES>
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/36ed2adc9f641fe07b03d133ff36de1a/jetified-loadingView-1.1/AndroidManifest.xml" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/36ed2adc9f641fe07b03d133ff36de1a/jetified-loadingView-1.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-2/files-2.1/36ed2adc9f641fe07b03d133ff36de1a/jetified-loadingView-1.1/res" />
+      <root url="jar://$USER_HOME$/.gradle/caches/transforms-3/32e001dc728272dab22a6c587c4855c4/transformed/jetified-loadingView-1.1/jars/classes.jar!/" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/32e001dc728272dab22a6c587c4855c4/transformed/jetified-loadingView-1.1/res" />
+      <root url="file://$USER_HOME$/.gradle/caches/transforms-3/32e001dc728272dab22a6c587c4855c4/transformed/jetified-loadingView-1.1/AndroidManifest.xml" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES>
+      <root url="jar://$USER_HOME$/.gradle/caches/modules-2/files-2.1/com.github.samigehi/loadingView/1.1/b370633ef4f7de00a46dd2bb393f03a7785916ab/loadingView-1.1-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

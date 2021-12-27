@@ -2,7 +2,6 @@ package com.image.pagination.home.ui
 
 import android.annotation.SuppressLint
 import android.os.Bundle
-import android.os.Handler
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
@@ -11,18 +10,15 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.SearchView
 import androidx.databinding.DataBindingUtil
-import androidx.paging.PagedList
 import androidx.recyclerview.widget.DefaultItemAnimator
 import androidx.recyclerview.widget.GridLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.github.loadingview.LoadingView
 import com.image.pagination.R
 import com.image.pagination.databinding.ActivityMainBinding
-import com.image.pagination.home.model.Image
 import com.image.pagination.utils.Constants.LANDSCAPE_GRID_SIZE
 import com.image.pagination.utils.Constants.PORTRAIT_GRID_SIZE
 import dagger.hilt.android.AndroidEntryPoint
-import es.dmoral.toasty.Toasty
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
@@ -31,13 +27,19 @@ import io.reactivex.subjects.PublishSubject
 import java.util.*
 import java.util.concurrent.TimeUnit
 import androidx.activity.viewModels
-import com.image.pagination.ProgressDialog
+import androidx.lifecycle.lifecycleScope
+import androidx.paging.LoadState
+import androidx.paging.filter
+import com.image.pagination.home.model.Image
 import com.image.pagination.home.viewmodel.HomeViewModel
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import javax.inject.Inject
 
 @AndroidEntryPoint
 class HomeActivity : AppCompatActivity() {
-    @Inject lateinit var mAdapter: HomeAdapter
+    @Inject
+    lateinit var mAdapter: HomeAdapter
     val homeViewModel: HomeViewModel by viewModels()
 
     private lateinit var binding: ActivityMainBinding
@@ -49,11 +51,9 @@ class HomeActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        homeViewModel = ViewModelProvider(this).get(HomeViewModel::class.java)
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main)
         attachViews()
         configRecyclerView()
-        getImages()
     }
 
     private fun attachViews() {
@@ -63,24 +63,16 @@ class HomeActivity : AppCompatActivity() {
         title = binding.toolbarTextView
 
         attachToolbar()
-
-        val dialog:ProgressDialog = ProgressDialog.init("Loading ..")
-        dialog.show(supportFragmentManager, ProgressDialog.TAG);
-
-//        dialog.changeDialogMessage("Loaded")
-
-//        dialog.dismiss()
-
-        Handler().postDelayed(Runnable {
-        },5000)
-
     }
 
     private fun attachToolbar() {
         val toolbar = binding.toolbar
         setSupportActionBar(toolbar)
-        supportActionBar!!.setDisplayHomeAsUpEnabled(true)
-        supportActionBar!!.setDisplayShowHomeEnabled(true)
+
+        supportActionBar?.let {
+            it.setDisplayHomeAsUpEnabled(true)
+            it.setDisplayShowHomeEnabled(true)
+        }
     }
 
     private fun configRecyclerView() {
@@ -89,36 +81,44 @@ class HomeActivity : AppCompatActivity() {
         else
             GridLayoutManager(this, LANDSCAPE_GRID_SIZE)
 
-        postList.layoutManager = gridLayoutManager
-        postList.itemAnimator = DefaultItemAnimator()
-//        mAdapter = HomeAdapter(homeViewModel, this)
+        mAdapter.setOwner(this@HomeActivity)
 
-        mAdapter.homeViewModel = homeViewModel
-        mAdapter.lifecycleOwner = this
-        postList.adapter = mAdapter
-    }
+        postList.apply {
+            layoutManager = gridLayoutManager
+            itemAnimator = DefaultItemAnimator()
+            adapter = mAdapter
+        }
 
-    private fun getImages() {
-        progressBar.visibility = View.VISIBLE
-        progressBar.start()
 
-        homeViewModel.imageList.observe(this, androidx.lifecycle.Observer { sampleResults ->
-            progressBar.visibility = View.GONE
-            progressBar.stop()
-            setupUI(View.GONE, sampleResults)
-        })
+        homeViewModel.mediatorLiveData.observe(this@HomeActivity){
+            mAdapter.setViewModel(homeViewModel)
+            lifecycleScope.launch {
+                mAdapter.submitData(it)
+            }
+        }
 
-        homeViewModel.errorLiveData.observe(this, androidx.lifecycle.Observer { message ->
-            Toasty.error(this, message, Toast.LENGTH_SHORT).show()
-        })
 
-        homeViewModel.emptyListLiveData.observe(this, androidx.lifecycle.Observer { _ ->
-            setupUI(View.VISIBLE, null)
-        })
+        mAdapter.addLoadStateListener { loadState ->
+            if (loadState.refresh is LoadState.Loading){
+                progressBar.visibility = View.VISIBLE
+                progressBar.start()
+            }
+            else{
+                progressBar.visibility = View.GONE
+                progressBar.stop()
 
-        homeViewModel.titleLiveData.observe(this, androidx.lifecycle.Observer { titleName ->
-            title.text = titleName
-        })
+                // getting the error
+                val error = when {
+                    loadState.prepend is LoadState.Error -> loadState.prepend as LoadState.Error
+                    loadState.append is LoadState.Error -> loadState.append as LoadState.Error
+                    loadState.refresh is LoadState.Error -> loadState.refresh as LoadState.Error
+                    else -> null
+                }
+                error?.let {
+                    Toast.makeText(this, it.error.message, Toast.LENGTH_LONG).show()
+                }
+            }
+        }
     }
 
     private fun fromView(searchView: SearchView, searchItem: MenuItem): Observable<String> {
@@ -157,7 +157,7 @@ class HomeActivity : AppCompatActivity() {
                     if (text.isEmpty())
                         return@map "EMPTY CASE"
                     else
-                        return@map text.toLowerCase(Locale.ROOT).trim()
+                        return@map text.lowercase(Locale.ROOT).trim()
                 }
                 .filter { text: String -> text.length >= 3 }
                 .distinctUntilChanged()
@@ -171,8 +171,6 @@ class HomeActivity : AppCompatActivity() {
                             homeViewModel.setSearchText("")
                         else
                             homeViewModel.setSearchText(search)
-
-                        getImages()
                     }
 
                     override fun onError(e: Throwable) {}
@@ -186,13 +184,6 @@ class HomeActivity : AppCompatActivity() {
     override fun onSupportNavigateUp(): Boolean {
         onBackPressed()
         return true
-    }
-
-    private fun setupUI(emptyViewVisibility: Int, list: PagedList<Image.Page.Items.Content>?) {
-        emptyView.visibility = emptyViewVisibility
-
-        if (list != null)
-            mAdapter.submitList(list)
     }
 }
 

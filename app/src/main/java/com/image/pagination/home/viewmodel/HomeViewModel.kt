@@ -1,33 +1,35 @@
 package com.image.pagination.home.viewmodel
 
-import androidx.hilt.lifecycle.ViewModelInject
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.ViewModel
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
-import com.image.pagination.home.repository.ImageListDSFactory
+import androidx.lifecycle.*
+import androidx.paging.*
 import com.image.pagination.home.model.Image
+import com.image.pagination.home.repository.ImageListDataSource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.filter
+import javax.inject.Inject
 
-class HomeViewModel @ViewModelInject constructor( var dataSourceFactory: ImageListDSFactory,var config: PagedList.Config, var images: LiveData<PagedList<Image.Page.Items.Content>> ) : ViewModel() {
-    private val _search = MutableLiveData<String>()
+@HiltViewModel
+class HomeViewModel @Inject constructor(val dataSource: ImageListDataSource, val pager:Pager<Int, Image.Page.Items.Content>) : ViewModel() {
+    private val _search = MutableLiveData("")
     var search: LiveData<String> = _search
 
     fun setSearchText(searchText: String) {
         _search.value = searchText
-        dataSourceFactory.setSearchQuery(searchText)
-        images = LivePagedListBuilder(dataSourceFactory, config).build()
+//        dataSource.setSearchQuery(searchText)
+        mediatorLiveData.updateSourceFiltering(searchText)
     }
 
-    val errorLiveData: LiveData<String>
-        get() = dataSourceFactory.errorLiveData
+    private var imageList = pager.liveData.cachedIn(viewModelScope)
+    val mediatorLiveData =
+        MediatorLiveData<PagingData<Image.Page.Items.Content>>().apply { updateSourceFiltering("") }
 
-    val emptyListLiveData: LiveData<Image>
-        get() = dataSourceFactory.emptyLiveData
-
-    val titleLiveData: LiveData<String>
-        get() = dataSourceFactory.titleLiveData
-
-    val imageList: LiveData<PagedList<Image.Page.Items.Content>>
-        get() = images
+    private fun MediatorLiveData<PagingData<Image.Page.Items.Content>>.updateSourceFiltering(searchText: String) {
+        removeSource(imageList)
+        addSource(imageList) {
+            this.value = it.filter {
+                return@filter it.getName().lowercase().contains(searchText)
+            }
+        }
+    }
 }

@@ -40,17 +40,13 @@
                 app:spinner="@{cardSpinner}"
                 android:contentDescription="@string/image_thumbnail" />
 
-            <com.wang.avi.AVLoadingIndicatorView
+            <ProgressBar
                 android:id="@+id/cardSpinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                style="@style/AVLoadingIndicatorView"
                 android:visibility="gone"
-                app:indicatorName="BallScaleMultipleIndicator"
-                app:indicatorColor="@android:color/white"
                 android:layout_gravity="center"
                 android:layout_centerInParent="true"/>
-
         </RelativeLayout>
 
         <TextView

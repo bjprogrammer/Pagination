@@ -17,8 +17,6 @@ import androidx.fragment.app.DialogFragment
 */
 class ProgressDialog : DialogFragment() {
     private lateinit var dialog: AlertDialog
-    private lateinit var mContext: Context
-
     private var textView: TextView? = null
     private var message: String? = null
 
@@ -39,20 +37,16 @@ class ProgressDialog : DialogFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        mContext = context!!
-        if (arguments != null && arguments!!.containsKey(DIALOG_MESSAGE) && message == null) {
-            message = arguments!!.getString(DIALOG_MESSAGE)!!
+        if (arguments != null && requireArguments().containsKey(DIALOG_MESSAGE) && message == null) {
+            message = requireArguments().getString(DIALOG_MESSAGE)!!
         }
     }
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val builder = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            AlertDialog.Builder(mContext, R.style.Theme_AppCompat_Light_Dialog_Alert)
-        } else {
-            AlertDialog.Builder(mContext)
-        }
+        val builder =
+            AlertDialog.Builder(requireContext(), R.style.Theme_AppCompat_Light_Dialog_Alert)
 
-        val inflater = mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
+        val inflater = requireContext().getSystemService(Context.LAYOUT_INFLATER_SERVICE) as LayoutInflater
         val dialogView = inflater.inflate(R.layout.dialog_progress, null)
         textView = dialogView.findViewById(R.id.dialog_msg)
         textView!!.text = message

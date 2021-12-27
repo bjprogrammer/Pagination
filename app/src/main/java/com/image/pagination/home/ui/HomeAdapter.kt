@@ -5,7 +5,7 @@ import android.view.ViewGroup
 import androidx.databinding.DataBindingUtil
 import androidx.databinding.ViewDataBinding
 import androidx.lifecycle.LifecycleOwner
-import androidx.paging.PagedListAdapter
+import androidx.paging.PagingDataAdapter
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.image.pagination.BR
@@ -14,9 +14,16 @@ import com.image.pagination.home.viewmodel.HomeViewModel
 import com.image.pagination.home.model.Image
 import javax.inject.Inject
 
-class HomeAdapter @Inject constructor() : PagedListAdapter<Image.Page.Items.Content, HomeAdapter.ViewHolder>(DIFF_CALLBACK) {
-    lateinit var homeViewModel : HomeViewModel ;
-    lateinit var lifecycleOwner: LifecycleOwner;
+class HomeAdapter @Inject constructor() : PagingDataAdapter<Image.Page.Items.Content, HomeAdapter.ViewHolder>(DIFF_CALLBACK) {
+    lateinit var lifecycleOwner: LifecycleOwner
+    var homeViewModel : HomeViewModel?=null
+    fun setOwner(lifecycleOwner: LifecycleOwner){
+        this.lifecycleOwner = lifecycleOwner
+    }
+
+    fun setViewModel(viewModel: HomeViewModel?) {
+        homeViewModel = viewModel
+    }
 
     companion object {
         private val DIFF_CALLBACK: DiffUtil.ItemCallback<Image.Page.Items.Content> = object : DiffUtil.ItemCallback<Image.Page.Items.Content>() {
@@ -40,7 +47,6 @@ class HomeAdapter @Inject constructor() : PagedListAdapter<Image.Page.Items.Cont
     }
 
     inner class ViewHolder internal constructor(private val binding: ViewDataBinding) : RecyclerView.ViewHolder(binding.root) {
-
         fun bind(obj: Any?) {
             binding.setVariable(BR.image, obj)
             binding.setVariable(BR.viewModel, homeViewModel)

@@ -1,11 +1,9 @@
 package com.image.pagination.home.deps
 
-import androidx.lifecycle.LiveData
-import androidx.paging.LivePagedListBuilder
-import androidx.paging.PagedList
+import androidx.paging.*
 import com.google.gson.Gson
 import com.image.pagination.home.model.Image
-import com.image.pagination.home.repository.ImageListDSFactory
+import com.image.pagination.home.repository.ImageListDataSource
 import dagger.Module
 import dagger.Provides
 import dagger.hilt.InstallIn
@@ -15,8 +13,10 @@ import dagger.hilt.android.components.ActivityRetainedComponent
 @InstallIn(ActivityRetainedComponent::class)
 object ViewModelModule {
     @Provides
-    fun getPagedList(dataSourceFactory: ImageListDSFactory, config: PagedList.Config): LiveData<PagedList<Image.Page.Items.Content>> {
-        return LivePagedListBuilder(dataSourceFactory, config).build()
+    fun getPager(dataSource: ImageListDataSource, config: PagingConfig): Pager<Int,Image.Page.Items.Content> {
+        return Pager(config) {
+            dataSource
+        }
     }
 
     @Provides
@@ -25,11 +25,8 @@ object ViewModelModule {
     }
 
     @Provides
-    fun getConfig(): PagedList.Config{
-        return PagedList.Config.Builder()
-                .setPrefetchDistance(7)
-                .setEnablePlaceholders(false)
-                .build()
+    fun getConfig(): PagingConfig{
+        return PagingConfig(20,7, false)
     }
 }
 
